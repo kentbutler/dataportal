@@ -27,9 +27,9 @@ class Dataport {
 	static final String STD_LOCATION = "location"
 	static final String STD_CREATE_DATE = "createDate"
 	static final String STD_EVENT_DATE = "eventDate"
+	static final STD_FIELDS = [STD_UUID, STD_NAME, STD_DESCRIPTION, STD_LOCATION, STD_CREATE_DATE, STD_EVENT_DATE]
 	
 	static final String DEFAULT_OUTPUT_DATE_FORMAT = "MM/dd/yyyy"
-	static final STD_FIELDS = [STD_UUID, STD_NAME, STD_DESCRIPTION, STD_LOCATION, STD_CREATE_DATE, STD_EVENT_DATE]
 	
 	// How the incoming Dataset regards them - defaults as normalized already,
 	//    user should override these as necessary
@@ -65,6 +65,7 @@ class Dataport {
 		sb.append("\n    id:    ").append(id)
 		sb.append("\n    Context:    ").append(contextName)
 		sb.append("\n    Endpoint:    ").append(endpoint)
+		sb.append("\n    IsLocal?:    ").append(isLocalDatasource())
 		sb.append("\n    Type:    ").append(type)
 		sb.append("\n    Description:    ").append(description)
 		sb.append("\n    Loaded:    ").append(loaded)

@@ -1,5 +1,9 @@
 package ncc.owfdemo.data
 
+import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
+
+import com.sun.org.apache.xalan.internal.xsltc.compiler.ForEach;
+
 import ncc.owfdemo.Dataset
 import ncc.owfdemo.JsonUtils
 import net.sf.json.JSONObject
@@ -13,18 +17,25 @@ class JsonDataLoader {
     
     void parseAndStore (def dataport, def data) {
         def json
+		log.trace "----------------------- loading JSON from file ----------------"
         if (data instanceof java.util.Collection) {
-            def errCount = 0, str
-            data.each {
+            def errCount = 0
+			
+			for (str in data) {
+				log.trace "----- JSON:: $str"
+				// GUARD
+				if (!str || str.size() <= 0) {
+					log.trace "...skipping..."
+					continue
+				}
+				
 				// Remove some potential JSON format tokens
-				str = it
-				if (str && str.size() > 0 && str[0] == '[') {
+				if (str[0] == '[') {
 					str = str[1..-1]
 				}
-				if (str && str.size() > 0 && str[-1] == ',') {
+				if (str[-1] == ',') {
 					str = str[0..-2]
 				}
-				log.trace "----------------------- loading JSON from file ----------------\n $str"
                 try {
                     json = JSONObject.fromObject(str)
                     
@@ -46,16 +57,15 @@ class JsonDataLoader {
 	                    dataset = Dataset.fromJson(dataport, json)
 	                }
 	                catch (Exception e) {
-						if (e instanceof RuntimeException) {
+						//if (e instanceof RuntimeException) {
 							e.printStackTrace()
-						}
-	                    log.error "### Error parsing JSON:\n${json?.toString()}\n$e"
+						//}
+	                    log.error "### Error parsing JSON: $e"
+	                    log.error "### JSON:\n${json?.toString()}"
 						dataset = null
 	                }
 	
 	                if (dataset) {
-						log.trace "================== created dataset ========================\n$dataset"
-	                
 	                    //TODO Save this in a data collection named for our dataport
 	                    //   following did not work
 	                    //dataset.mapping['collection'] = dataport.contextName
@@ -66,7 +76,7 @@ class JsonDataLoader {
 	                        dataset.uuid = UUID.randomUUID().toString()
 	                    }
 	                    try {
-	                        log.trace "================== storing data into Mongo ========================"
+	                        log.trace "================== storing data into Mongo ========================\n$dataset"
 	                         dataset.save()
 	                        
 	                    } catch (Exception e) {
@@ -75,7 +85,8 @@ class JsonDataLoader {
 	                    }
 	                }
 	                else {
-	                    log.error "### Some error creating a dataset from Dataport\n$dataport \n ---- and JSON ---\n [$json]"
+	                    log.error "### Some error creating a dataset from Dataport from JSON"
+	                    log.error "${json?.toString()}"
 	                }
                 }
             }

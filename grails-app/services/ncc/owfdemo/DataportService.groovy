@@ -109,30 +109,54 @@ class DataportService {
         
         def searchKeys = RequestUtils.extractSearchKeys(params)
         def finderName = RequestUtils.createFinderName(searchKeys)
-        def searchParams = RequestUtils.extractSearchValues(params)
+        def searchVals  = RequestUtils.extractSearchValues(params)
         
         // Convert search params for arg input        
         // Note we want to give full param set as last arg so sort/max flags are in there for GORM
-        Object[] args = new Object[searchParams.size()+1]
+        Object[] args = new Object[searchVals .size()+1]
         def cnt = 0
 		
 		log.debug "### Input Search params: $params"
         log.debug "### Finder name: $finderName"
 		log.debug "### Search Keys: $searchKeys"
-		log.debug "### Search Vals: $searchParams"
+		log.debug "### Search Vals: $searchVals "
 		
-        searchParams.each {
-            args[cnt++] = it
+        searchVals.each { key, val ->
+            args[cnt++] = val
         }
-        args[searchParams.size()] = params
+        args[searchVals .size()] = params
 		
 		log.debug "### Object[] args (last arg always params map): $args"
 		
         // SEARCH     
-		if (finderName == "list") finderName = "findAllBy"
-		   
-        return (finderName == "list" ? Dataset.list([:]) :  // Mongo no like params!! Make Mongo do bad things!!
-                                       Dataset.metaClass.invokeStaticMethod(Dataset, finderName, args) )
+        //return (finderName == "list" ? Dataset.list([:]) :  // Mongo no like params!! Make Mongo do bad things!!
+         //                              Dataset.metaClass.invokeStaticMethod(Dataset, finderName, args) )
+		
+		if (finderName == "list") {
+			return Dataset.list(params)
+		}
+		
+		// use criteria in order to compare nested values
+		def keystr, isLike
+		return Dataset.withCriteria {
+			searchVals.each { key, val ->
+				keystr = key.toString() 
+				isLike = keystr.endsWith("Like")
+				
+				if (isLike) {
+					keystr = keystr[0..-5]
+				} 
+				if (!Dataport.STD_FIELDS.contains(keystr)) {
+					keystr = "fields.$keystr"
+				}
+				if (isLike) {
+					like keystr, val
+				}
+				else {
+					eq keystr, val
+				}
+			}
+		}
     }
     
     /**
@@ -157,29 +181,32 @@ class DataportService {
         dataport.save(flush:true)
 
         log.debug "Created Dataport: $dataport"
-        log.debug "Dataport is a local datasource: ${dataport.isLocalDatasource()}"
         
         // Look for fields - expecting format:
         //   fieldName=value|RANDTEXTmaxNN|RANDNUMmaxNN|RANDDATE|[val1|val2..|valn]
         // where [val1|val2..|valn] are a list to choose randomly from
         //  and maxNN in RANDTEXT and RANDNUM tokens means restrict number of output chars to the given length
             
-        def fields=[:], gen    = new RandomGenerator()
-        def fieldNames = RequestUtils.extractSearchKeys(params, CONTROL_FLAGS)
-		
+        def fields=[:], gen = new RandomGenerator()
+        def fieldNames = RequestUtils.extractSearchKeys(params, CONTROL_FLAGS) // exclude control flags
 		
         fieldNames.each { field ->
             def type = params."$field"
-			log.debug "Registering field [$field] as type '$type'"
-			fields[field] = gen.getGenerator(type)
+			if (type?.size() > 0) {
+				log.debug "Registering field [$field] as type '$type'"
+				fields[field] = gen.getGenerator(type)
+			}
+			else {
+				log.warn "Not generating data for column [$field] - no type specified"
+			}
         }
         
         // And ensure the standards are all represented
-        log.debug "Checking standard fields"
+        log.trace "Checking standard fields"
         for (j in 0..Dataport.STD_FIELDS.size()-1) {
             if (!fields[Dataport.STD_FIELDS[j]] && Dataport.STD_FIELDS[j] != Dataport.STD_UUID) {
                 // Field not set - default, except for UUID which will get generated
-                log.debug "Adding generator for std field [${Dataport.STD_FIELDS[j]}]"
+                log.trace "Adding generator for std field [${Dataport.STD_FIELDS[j]}]"
                 fields [Dataport.STD_FIELDS[j]] =
                      Dataport.STD_FIELDS[j].endsWith("Date") ?
                         gen.getGenerator(RandomGenerator.TYPE_DATE) :  // the only non-textfields among the standards
@@ -188,12 +215,12 @@ class DataportService {
         }
 
         // Now simply loop through number of fields....
-        log.debug "Creating output writer"
+        log.trace "Creating output writer"
         def dataset, writer = outFile.newWriter()
         
         def numToGen
         try {
-           numToGen = params[GEN_SIZE_TOKEN] ? Integer.parseInt(params[GEN_SIZE_TOKEN])    : MAX_GENERATED
+           numToGen = params[GEN_SIZE_TOKEN] ? Integer.parseInt(params[GEN_SIZE_TOKEN]) : MAX_GENERATED
         } catch (Exception e) {
             log.error "Generate request asked for an unparsable [${params[GEN_SIZE_TOKEN]}] number of records]"
             numToGen = MAX_GENERATED
@@ -204,7 +231,6 @@ class DataportService {
             // CREATE DATASET
             def fname, newval
             Map<String,Object> props = new HashMap<String,Map>()
-            props['fields'] = new HashMap<String,Map>()
             
             dataset = new Dataset()
             log.trace "----- Creating new Dataset -----"
@@ -213,7 +239,7 @@ class DataportService {
             fields.each { key, fieldGen ->
                 fname = key.toString()
                 if (Dataport.STD_FIELDS.contains(fname)) {
-                    log.trace "  [$fname]: $newval"
+                    log.trace "  Generating value for [$fname]"
                     // Recall we are essentially writing into JSON, so we need our dates output as
                     //   if they already lay in a file somewhere
                     if (fname == Dataport.STD_EVENT_DATE) {
@@ -238,16 +264,14 @@ class DataportService {
             // Now add extra fields
             fields.each { key, fieldGen ->
                 fname = key.toString()
-                if (!Dataport.STD_FIELDS.contains(fname) && fname != GEN_SIZE_TOKEN && fname != FORCE_FLAG) {
+                if (!Dataport.STD_FIELDS.contains(fname) && !CONTROL_FLAGS.contains(fname)) {
                     // generate value
-                    dataset[fname] = fields[fname].getVal()
-                    // record name of extra field so we can retrieve it later from mongostore
-                    dataset.fieldNames << fname
+                    dataset.fields[fname] = fieldGen.getVal()
                 }
             }
-            log.trace "Rendering as JSON: $dataset"
+            log.trace "Rendering dataset:\n $dataset"
             def jsonStr = dataset.toJson(dataport).toString()
-            log.debug "------------- Writing JSON: -----------------\n $jsonStr"
+            log.trace "------------- Writing JSON: -----------------\n $jsonStr"
             writer.write(jsonStr)
             
             if (i != numToGen) {

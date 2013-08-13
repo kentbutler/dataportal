@@ -62,17 +62,16 @@ class RequestUtils {
 	 * @return list of params
 	 */
 	static def extractSearchValues(Map params, def style=SQL) {
-		def out = [], isLikeModifier = false
-		def keyval, newkey, newval
+		def out = [:], isLikeModifier = false
 		def tok = (style==SQL ? "%" : (style==MONGO ? "/":""))
+		def keyval
 		
 		params.keySet().each { key ->
 			keyval = key.toString()
 			isLikeModifier = keyval.endsWith("Like") || keyval.endsWith("Ilike")
-
+			
 			if (!RequestUtils.STD_CONTROLLER_META_TAGS.contains(keyval)) {
-				newval = isLikeModifier ? "$tok${params[keyval]}$tok" : params[keyval]
-				out << newval
+				out[keyval] = (isLikeModifier ? "$tok${params[keyval]}$tok" : params[keyval])
 			}
 		}
 		return out

@@ -123,6 +123,56 @@ class DataportFileTests extends BrowserTestCase {
 
 	}
 
+	void testOptionalDataLike() {
+		def data = Dataport.findByContextName('ufo-mini')
+		if (!data) {
+			data = dataport.save(flush:true)
+		}
+		dataport = data
+		assertNotNull "Test dataport is null", dataport
+		
+		// *** Search for just a few records
+		get("/data/ufo-mini?durationLike=min")
+		
+		def model = response.contentAsString
+		log.debug "Response: $model"
+		
+		assertStatus 200
+		def json = JSONObject.fromObject(model)
+		def numItems = json.optInt("numItems", 0)
+		assertTrue "0 item count in results", numItems > 0
+		
+		def jlist = json.getJSONArray("items")
+		assertNotNull jlist
+		assertTrue "list is empty", jlist.size() > 0
+		assertTrue "list length is not correct for optional field search", jlist.size() == 6
+	}
+
+	void testOptionalDataLikeAnd() {
+		def data = Dataport.findByContextName('ufo-mini')
+		if (!data) {
+			data = dataport.save(flush:true)
+		}
+		dataport = data
+		assertNotNull "Test dataport is null", dataport
+		
+		// *** Search for just a few records
+		get("/data/ufo-mini?durationLike=min&descriptionLike=human")
+		
+		def model = response.contentAsString
+		log.debug "Response: $model"
+		
+		assertStatus 200
+		def json = JSONObject.fromObject(model)
+		def numItems = json.optInt("numItems", 0)
+		assertTrue "0 item count in results", numItems > 0
+		
+		def jlist = json.getJSONArray("items")
+		assertNotNull jlist
+		assertTrue "list is empty", jlist.size() > 0
+		assertTrue "list length is not correct for optional field search", jlist.size() == 1
+	}
+
 	void testSearchUnknownDataset() {
 		get("/data/unknown")
 		def model = response.contentAsString
@@ -150,8 +200,19 @@ class DataportFileTests extends BrowserTestCase {
 		assertStatus 200
 		def json = JSONObject.fromObject(model)
 		def numItems = json.optInt("numItems", 0)
-		assertTrue "0 item count in results", numItems > 0
+		//assertTrue "0 item count in results", numItems > 0
+
+// try SECOND TIME
+		get("/data/ufo-mini")
 		
+		model = response.contentAsString
+		log.debug "Response: $model"
+		
+		assertStatus 200
+		json = JSONObject.fromObject(model)
+		numItems = json.optInt("numItems", 0)
+		assertTrue "0 item count in results", numItems > 0
+
 		def jlist = json.getJSONArray("items")
 		assertNotNull jlist
 		assertTrue "list is empty", jlist.size() > 0

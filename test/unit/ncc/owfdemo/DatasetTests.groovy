@@ -15,15 +15,6 @@ class DatasetTests {
 
     void setUp() {
         // Setup logic here
-		
-		// Dataset gets this capability from GORM - enable dynamic attributes for these tests
-		Dataset.metaClass.storage = [:]
-		Dataset.metaClass.propertyMissing = { name, value ->
-		   storage[name] = value 
-	    }
-		Dataset.metaClass.propertyMissing = { name ->
-		   return storage[name] 
-	    }
     }
 
     void tearDown() {
@@ -66,10 +57,10 @@ class DatasetTests {
 		assertTrue "eventDate incorrect", dset.eventDate == '20001111'
 		
 		// Extra fields
-		assertNotNull "Field 1 is empty", dset['key1']
-		assertNotNull "Field 2 is empty", dset['key2']
-		assertTrue "Field 1 val incorrect", dset['key1'] == 'val1'
-		assertTrue "Field 2 val incorrect", dset['key2'] == 'val2'
+		assertNotNull "Field 1 is empty", dset.fields['key1']
+		assertNotNull "Field 2 is empty", dset.fields['key2']
+		assertTrue "Field 1 val incorrect", dset.fields['key1'] == 'val1'
+		assertTrue "Field 2 val incorrect", dset.fields['key2'] == 'val2'
 		
     }
 }

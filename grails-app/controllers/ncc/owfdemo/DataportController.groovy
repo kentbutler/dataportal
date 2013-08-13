@@ -42,9 +42,9 @@ class DataportController {
         } 
         catch (Exception e) {
             log.error "Error loading data from ${dataport.endpoint}: $e"
-            if (e instanceof RuntimeException) {
+            //if (e instanceof RuntimeException) {
                 e.printStackTrace()
-            }
+            //}
             render(text: "{\"message\":\"Error loading dataport [${params.contextName}]\"}", contentType: "text/json", encoding: "UTF-8", status: 500)
             return
         }
@@ -62,7 +62,7 @@ class DataportController {
             return
         }
         
-        log.trace "================== rendering result ========================"
+        log.trace "================== rendering results [${results?.size()}] ========================"
 
         // Assemble results in to a JSON list
         JSONArray alist = new JSONArray()

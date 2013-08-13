@@ -82,14 +82,9 @@ class RequestUtilsTests {
 		assertNotNull "Out map is null", out
 		assertTrue "Out map is empty", out.size() > 0
 		assertTrue "Out map is not 3 in size", out.size() == 3
-		assertTrue "Out map does not contain name value: $out", out.contains("jon")
-		assertTrue "Out map does not contain age value: $out", out.contains("44")
-		// b/c contains does not seem to work when special chars are involved
-		def found = false
-		out.each {
-			if (it == "%test%") found = true
-		}
-		assertTrue "Out map does not contain description value: $out", found
+		assertNotNull "Out map does not contain name value: $out", out["name"]
+		assertNotNull "Out map does not contain age value: $out", out["age"]
+		assertTrue "Out map does not contain description value: $out", out["descriptionLike"] == "%test%"
 	}
 
 	void testPrepareSearchParamsMongo() {
@@ -99,13 +94,8 @@ class RequestUtilsTests {
 		assertNotNull "Out map is null", out
 		assertTrue "Out map is empty", out.size() > 0
 		assertTrue "Out map is not 3 in size", out.size() == 3
-		assertTrue "Out map does not contain name: $out", out.contains("jon")
-		assertTrue "Out map does not contain age: $out", out.contains("44")
-		// b/c contains does not seem to work when special chars are involved
-		def found = false
-		out.each {
-			if (it == "/test/") found = true
-		}
-		assertTrue "Out map does not contain description value: $out", found
+		assertNotNull "Out map does not contain name value: $out", out["name"]
+		assertNotNull "Out map does not contain age value: $out", out["age"]
+		assertTrue "Out map does not contain description value: $out", out["descriptionLike"] == "/test/"
 	}
 }

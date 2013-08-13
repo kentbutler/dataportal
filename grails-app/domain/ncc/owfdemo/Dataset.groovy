@@ -1,9 +1,6 @@
 package ncc.owfdemo
 
-import java.text.SimpleDateFormat
-
 import net.sf.json.JSONObject
-
 
 /**
  * Represents the set of data exposed by the dataportal.  Maps fields and renders JSON.
@@ -20,7 +17,7 @@ class Dataset {
 	String location
 	String createDate
 	String eventDate
-	def fieldNames = []
+	Map<String,String> fields = new HashMap<String,String>()
 	
 	static mapWith = 'mongo'
 	
@@ -41,7 +38,6 @@ class Dataset {
 		sb.append "\n   Location: $location"
 		sb.append "\n   CreateDate: $createDate"
 		sb.append "\n   EventDate: $eventDate"
-		sb.append "\n   Field-names: $fieldNames"
 		return sb
 	}
 	
@@ -85,9 +81,9 @@ class Dataset {
 			json.put(Dataport.STD_EVENT_DATE, eventDate)
 		}
 
-		fieldNames.each {
-			log.trace "toJSON ==> adding expando: [$it] val this[it]"
-			json.put(it, this[it])
+		fields.each { key, val ->
+			log.trace "toJSON ==> adding extra: [${key.toString()}]:[$val]"
+			json.put(key.toString(), val)
 		}
 		
 		return json
@@ -131,8 +127,7 @@ class Dataset {
 		def fname
 		keys.each { key ->
 			// Need to track field names so we can retrieve them later
-			dataset.fieldNames << key
-			dataset[key] = json.optString(key)
+			dataset.fields[key] = json.optString(key, "")
 		}
 		
 		return dataset
