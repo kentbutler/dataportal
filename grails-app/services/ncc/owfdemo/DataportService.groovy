@@ -69,7 +69,7 @@ class DataportService {
     
     
     /**
-     * I think this will go away when we actually implement this function.
+     * I think this will go away when we actually implement this capability.
      * @param data
      * @return
      */
@@ -115,7 +115,7 @@ class DataportService {
         // Note we want to give full param set as last arg so sort/max flags are in there for GORM
         Object[] args = new Object[searchVals .size()+1]
         def cnt = 0
-		
+
 		log.debug "### Input Search params: $params"
         log.debug "### Finder name: $finderName"
 		log.debug "### Search Keys: $searchKeys"
@@ -128,35 +128,45 @@ class DataportService {
 		
 		log.debug "### Object[] args (last arg always params map): $args"
 		
-        // SEARCH     
+        // SEARCH 
+		// this cannot support the persistence strategy using optional fields in a Map since we need . notation to 
+		//    search them
         //return (finderName == "list" ? Dataset.list([:]) :  // Mongo no like params!! Make Mongo do bad things!!
-         //                              Dataset.metaClass.invokeStaticMethod(Dataset, finderName, args) )
-		
+        //                              Dataset.metaClass.invokeStaticMethod(Dataset, finderName, args) )
 		if (finderName == "list") {
 			return Dataset.list(params)
 		}
 		
 		// use criteria in order to compare nested values
 		def keystr, isLike
-		return Dataset.withCriteria {
-			searchVals.each { key, val ->
-				keystr = key.toString() 
-				isLike = keystr.endsWith("Like")
-				
-				if (isLike) {
-					keystr = keystr[0..-5]
-				} 
-				if (!Dataport.STD_FIELDS.contains(keystr)) {
-					keystr = "fields.$keystr"
-				}
-				if (isLike) {
-					like keystr, val
-				}
-				else {
-					eq keystr, val
+		
+		log.debug "Searching collection [${dataport.contextName}]"
+		
+		def results
+     	Dataset.withCollection(dataport.contextName) {
+			def c = Dataset.createCriteria()
+			results = c.list {
+				searchVals.each { key, val ->
+					keystr = key.toString() 
+					isLike = keystr.endsWith("Like")
+					
+					if (isLike) {
+						keystr = keystr[0..-5]
+					}
+					if (!Dataport.STD_FIELDS.contains(keystr)) {
+						keystr = "fields.$keystr"
+					}
+					if (isLike) {
+						like keystr, val
+					}
+					else {
+						eq keystr, val
+					}
 				}
 			}
 		}
+		 
+        return results
     }
     
     /**

@@ -12,10 +12,10 @@ class BootStrap {
 			
             println "Loading test data..."
 			
-			def dataport = Dataport.findByContextName('ufo-mini')
+			def dataport = Dataport.findByContextName('ufomini')
 			if (!dataport) {
-				new Dataport(contextName:'ufo-mini',
-					endpoint:'file:///opt/projects/dataportal/data/ufo-mini.json',
+				new Dataport(contextName:'ufomini',
+					endpoint:'file:///opt/projects/dataportal/data/ufomini.json',
 					type: 'json',
 					description:'UFO sighting data from a JSON file',
 					mapId: 'id',

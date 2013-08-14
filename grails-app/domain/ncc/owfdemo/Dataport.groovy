@@ -2,6 +2,7 @@ package ncc.owfdemo
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.regex.Pattern
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 
@@ -45,7 +46,7 @@ class Dataport {
 	// Grails2 autoTimestamp feature
 	Date dateCreated
 	Date lastUpdated
-	
+	static final String NAME_PATTERN = "[a-zA-Z]{1}[a-zA-Z0-9]*"
 
 	transient def createDateFormatter
 	transient def eventDateFormatter
@@ -54,7 +55,7 @@ class Dataport {
 	static transients = ['createDateFormatter','eventDateFormatter','outputDateFormatter']
 	
 	static constraints = {
-		contextName(blank:false,nullable:false,maxSize:32)
+		contextName(blank:false,nullable:false,maxSize:32,matches:NAME_PATTERN)
 		endpoint(blank:false,nullable:false,maxSize:1024)
 		description(blank:false,nullable:false,maxSize:2048)
 	}

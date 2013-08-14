@@ -77,7 +77,8 @@ class JsonDataLoader {
 	                    }
 	                    try {
 	                        log.trace "================== storing data into Mongo ========================\n$dataset"
-	                         dataset.save()
+							Dataset.useCollection(dataport.contextName) 
+							dataset.save()
 	                        
 	                    } catch (Exception e) {
 	                        e.printStackTrace()

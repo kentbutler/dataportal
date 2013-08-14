@@ -13,6 +13,11 @@ class DataportController {
     
     def index() { }
     
+    /**
+     * Query an existing Dataport. Will load the data if necessary. 
+     * @param params
+     * @return
+     */
     def proxy(def params) {
         log.debug "================== proxy() ========================"
         log.debug "Processing request for data context [${params.contextName}]"
@@ -77,6 +82,11 @@ class DataportController {
         render(text: json.toString(), contentType: "text/json", encoding: "UTF-8", status: 200)
     }
     
+    /**
+     * Generate data given: contextName from URL, and fields described as params. 
+     * @param params
+     * @return
+     */
     def generate(def params) {
         log.debug "================== generate() ========================"
         log.debug "Processing request for data generation of context [${params.contextName}]"
@@ -108,11 +118,12 @@ class DataportController {
         }
         
 
-        def outFileName = "${getFileOutputLocation()}${File.separator}${params.contextName}.json"
+		// Output filename, should be 
+		//       <webapp deploy location>/<context>.json
+        def outFileName = "${RequestUtils.getFileOutputLocation(servletContext)}${File.separator}${params.contextName}.json"
         
         log.debug "Generating dataset [${params.contextName}] into file $outFileName"
 		
-		// Must create URL of filename
 		File outFile = new File(outFileName)
 		if (outFile.exists()) {
 			log.warn "Deleting existing outfile: $outFileName"
@@ -135,7 +146,4 @@ class DataportController {
         render(text: "{\"message\":\"successfully generated endpoint ${dataport.contextName}\"}", contentType: "text/json", encoding: "UTF-8", status: 200)
     }  
 	
-    String getFileOutputLocation() {
-        return servletContext.getRealPath("/")
-    }      
 }

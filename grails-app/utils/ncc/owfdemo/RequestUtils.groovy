@@ -1,5 +1,7 @@
 package ncc.owfdemo
 
+import javax.servlet.ServletContext
+
 class RequestUtils {
 	
 	/**
@@ -77,9 +79,19 @@ class RequestUtils {
 		return out
 	}
 	
+	/**
+	 * Given a web ServletContext calculate the location of external files produced by the app.
+	 * @param ctx
+	 * @return
+	 */
+	static String getFileOutputLocation(ServletContext ctx) {
+        return ctx.getRealPath("/")
+    }      
+	
+	
 	// Standard controller meta tags which are often included in the params map
 	// Included here is 'contextName' which is given by UrlMapping but should not affect app business logic
-	final static def STD_CONTROLLER_META_TAGS = ['action', 'controller', 'max', 'sort','contextName'] 
+	final static def STD_CONTROLLER_META_TAGS = ['action', 'controller', 'max', 'sort','contextName', 'dojo','dojo.preventCache'] 
 	static final String SQL = 'sql'
 	static final String MONGO = 'mongo'
 
