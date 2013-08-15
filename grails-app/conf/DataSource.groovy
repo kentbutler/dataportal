@@ -10,7 +10,7 @@ environments {
 			// run as create-drop for initial testing; note that you must clear mongo manually
 			dbCreate = "create-drop"  
 			driverClassName="com.mysql.jdbc.Driver"
-			url="jdbc:mysql://localhost:3306/dataportal"
+			url="jdbc:mysql://localhost:3306/dataportal_dev"
 			dialect="org.hibernate.dialect.MySQL5InnoDBDialect"
 			username="root"
 			password="dbpa55"
@@ -24,16 +24,16 @@ environments {
 				timeBetweenEvictionRunsMillis = 180000
 				minEvictableIdleTimeMillis = 180000
 			}
-			
-			// These get defaulted so not really necessary
-			mongo {
-				host = "localhost"
-				//port = 27107
-				//username = "blah"
-				//password = "blah"
-				//databaseName = "dataport"
-			}
 		}
+        grails {
+            mongo {
+                host = "localhost"
+                databaseName = "datadev"
+                port = 27017
+                //username = "blah"
+                //password = "blah"
+            }
+        }
     }
     test {
 		dataSource {
@@ -54,16 +54,16 @@ environments {
 				timeBetweenEvictionRunsMillis = 180000
 				minEvictableIdleTimeMillis = 180000
 			}
-			
-			// These get defaulted so not really necessary
-			mongo {
-				host = "localhost"
-				//port = 27107
-				//username = "blah"
-				//password = "blah"
-				//databaseName = "dataport"
-			}
 		}
+        grails {
+            mongo {
+                host = "localhost"
+                databaseName = "datatest"
+                port = 27017
+                //username = "blah"
+                //password = "blah"
+            }
+        }
     }
     production {
 		dataSource {
@@ -84,15 +84,15 @@ environments {
 				timeBetweenEvictionRunsMillis = 180000
 				minEvictableIdleTimeMillis = 180000
 			}
-			
-			// These get defaulted so not really necessary
-			mongo {
-				host = "localhost"
-				//port = 27107
-				//username = "blah"
-				//password = "blah"
-				//databaseName = "dataport"
-			}
 		}
+        grails {
+            mongo {
+                host = "localhost"
+                databaseName = "dataportal"
+                port = 27017
+                //username = "blah"
+                //password = "blah"
+            }
+        }
     }
 }
