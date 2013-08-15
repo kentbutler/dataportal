@@ -102,9 +102,10 @@ class JsonDataLoader {
 			log.warn "JSON is not detected as being a collection; check the raw data format for issues (jsonlint.com)"
             json = JSONObject.fromObject(data)
             // Put JSON record into Mongo intermediate storage
-            def dataset = Dataset.fromJson(dataport, json)
             try {
-                dataset.save(flush:true)
+                def dataset = Dataset.fromJson(dataport, json)
+                Dataset.useCollection(dataport.contextName) 
+                dataset?.save(flush:true)
                 
             } catch (Exception e) {
                 e.printStackTrace()

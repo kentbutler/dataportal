@@ -19,8 +19,6 @@ class DataportService {
         if (dataport.isLocalDatasource() && !dataport.loaded) {
             log.debug "================== loading data ========================"
             doLoad dataport, params
-            dataport.loaded = Boolean.TRUE
-            dataport.save(flush:true)
         }
     }
         
@@ -55,7 +53,14 @@ class DataportService {
         log.debug "================== warehousing dataport data ========================\n$dataport"
         
         if (dataport.type == 'json') {
-            new JsonDataLoader(log).parseAndStore(dataport, data)
+            try {
+                new JsonDataLoader(log).parseAndStore(dataport, data)
+                dataport.loaded = Boolean.TRUE
+                dataport.save(flush:true)
+    
+            } catch (Exception e) {
+                log.error "Error parsing and storing data: $e"
+            }
         }
         else if (dataport.type == 'csv') {
             //TODO Parse CSV

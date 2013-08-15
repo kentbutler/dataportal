@@ -1,7 +1,10 @@
 package ncc.owfdemo
 
+import groovy.util.logging.Log4j
+
 import javax.servlet.ServletContext
 
+@Log4j
 class RequestUtils {
 	
 	/**
@@ -85,7 +88,24 @@ class RequestUtils {
 	 * @return
 	 */
 	static String getFileOutputLocation(ServletContext ctx) {
-        return ctx.getRealPath("/")
+        def base = ctx.getRealPath("/")
+        def dirName = "${base}${File.separator}tmp"
+        def backup = "/var/data"
+        
+        def dir = new File(dirName)
+        
+        if (!dir.exists()) {
+            log.error "Unable to access file $dirName - using backup dir $backup"
+            dir = new File(backup)
+        }
+        else {
+            def f = new File("${dir.absolutePath}${File.separator}test.txt")
+            if (!f.exists()) {
+                log.error "Unable to access file ${f.absolutePath} - using backup dir $backup"
+                dir = new File(backup)
+            }
+        }
+        return dir.absolutePath
     }      
 	
 	
