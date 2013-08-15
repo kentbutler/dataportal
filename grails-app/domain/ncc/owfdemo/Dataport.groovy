@@ -14,12 +14,12 @@ import org.codehaus.groovy.grails.web.json.JSONObject
  */
 class Dataport {
 
-	String contextName
-	String endpoint
-	String type
-	String description
-	String outputDateFormat = DEFAULT_OUTPUT_DATE_FORMAT
-	Boolean loaded = Boolean.FALSE
+    String contextName
+    String endpoint
+    String type
+    String description
+    String outputDateFormat = DEFAULT_OUTPUT_DATE_FORMAT
+    Boolean loaded = Boolean.FALSE
 	
 	// How Dataportal regards the fields
 	static final String STD_UUID = "uuid"
