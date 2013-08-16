@@ -207,15 +207,15 @@ To query data from an existing Dataport, send a request to `/data/<contextName>`
   
 Get all records with descriptions like %commercial%
     
-       GET http://localhost:8080/dataportal/data/ufo?descriptionLike='commercial'
+        GET http://localhost:8080/dataportal/data/ufo?descriptionLike='commercial'
            
 Get all records with location like %AZ%
     
-       GET http://localhost:8080/dataportal/data/ufo?locationLike='AZ'
+        GET http://localhost:8080/dataportal/data/ufo?locationLike='AZ'
            
 Get all record with location like %AZ% and shape like 'cigar'
 
-       GET http://localhost:8080/dataportal/data/ufo?locationLike='AZ'&shape=cigar
+        GET http://localhost:8080/dataportal/data/ufo?locationLike='AZ'&shape=cigar
 
 Search is case-insensitive.  'Like' searches should **not** include wildcard characters in field values.
 
@@ -226,10 +226,11 @@ A Dataport with fabricated records may be created by issuing a request to the `/
 
 Example:
 
-    http://localhost:8080/dataportal/gen/het?genSize=1000&force=true \ 
-    &name=RANDTEXTmax8&status=RANDPICKactive|inactive|new \        
-    &mothership=RANDTEXTmax15   
-    where:   
+         http://localhost:8080/dataportal/gen/het?genSize=1000&force=true \ 
+         &name=RANDTEXTmax8&status=RANDPICKactive|inactive|new \        
+         &mothership=RANDTEXTmax15   
+
+where:   
    
 * `/gen/het`  specifies Dataset name as `/gen/<setName>`   
 * `genSize=[num]`  number of records to generate   
@@ -253,27 +254,40 @@ Example:
 
 ### Build 
 
-`grails compile`   
-*or**   
+        grails compile   
+   
+**or**   
 
-`grails war`
+        grails war
 
 ### Run locally 
 
-`grails -Dserver.port=8888 run-app --stacktrace`
+        grails -Dserver.port=8888 run-app --stacktrace
 
 ### Run Functional Tests
 
-`grails -Dserver.port=8888 test-app --stacktrace -functional`
+Functional testing is dependent upon another plugin which must be installed. To install, download the following project adjacent to this application:
+   
+        git clone https://github.com/kentbutler/grails-json-rest-api.git
+
+Modify your Dataportal app to use the plugin - open `grails-app/conf/BuildConfig.groovy` and uncomment the line
+
+        //grails.plugin.location.jsonrest = "/opt/projects/grails-json-rest-api"
+
+and correct the path for your local env.   
+   
+Now execute the tests:
+
+        grails -Dserver.port=8888 test-app --stacktrace -functional
 
 ### Run Unit Tests
 
-`grails test-app -unit`
+        grails test-app -unit
 
 ## Todo
 On the wish list:   
 
 * admin interface
-* when generating data, auto-stuff the data into Mongo vs. just creating the datafile
 * support for CSV
 * support for remote data endpoints  (need good examples)
+

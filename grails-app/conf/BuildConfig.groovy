@@ -12,7 +12,7 @@ grails.project.source.level = 1.6
 //]
 
 //grails.plugin.location.jsonrest = "e:/projects/grails-json-rest-api"
-grails.plugin.location.jsonrest = "/opt/projects/grails-json-rest-api"
+//grails.plugin.location.jsonrest = "/opt/projects/grails-json-rest-api"
 
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
