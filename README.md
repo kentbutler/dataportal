@@ -272,6 +272,17 @@ As a quick test of installation, run the following command after starting the se
    
 If this does not return any results then the app probably cannot connect to Mongo.  Check your server logs.
 
+### Verifying data generation
+
+Try a simple case like
+
+        http://localhost:8888/dataportal/gen/test?genSize=10&force=true&name=RANDTEXTmax8&status=RANDPICKactive|inactive|new&mothership=RANDTEXTmax15 
+
+and verify results with
+
+        http://localhost:8888/dataportal/data/test
+
+
 ### Run Functional Tests
 
 Functional testing is dependent upon another plugin which must be installed. To install, download the following project adjacent to this application:
