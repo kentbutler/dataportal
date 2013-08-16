@@ -264,6 +264,14 @@ where:
 
         grails -Dserver.port=8888 run-app --stacktrace
 
+### Verifying the install
+
+As a quick test of installation, run the following command after starting the server.  This should return a short list of results:
+
+        http://localhost:8888/dataportal/data/ufomini?locationLike=WA
+   
+If this does not return any results then the app probably cannot connect to Mongo.  Check your server logs.
+
 ### Run Functional Tests
 
 Functional testing is dependent upon another plugin which must be installed. To install, download the following project adjacent to this application:
