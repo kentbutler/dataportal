@@ -105,7 +105,7 @@ class DataportService {
      * @return
      */
     def retrieveItems (Dataport dataport, def params) {
-        if (!dataport) {
+        if (!dataport || !dataport.contextName) {
             throw new IllegalArgumentException("Unsupported: search on undefined Dataport")
         }
         log.debug "================== searching warehouse [${dataport.contextName}] ========================"
@@ -139,7 +139,11 @@ class DataportService {
         //return (finderName == "list" ? Dataset.list([:]) :  // Mongo no like params!! Make Mongo do bad things!!
         //                              Dataset.metaClass.invokeStaticMethod(Dataset, finderName, args) )
 		if (finderName == "list") {
-			return Dataset.list(params)
+            def results 
+			Dataset.withCollection(dataport.contextName) {
+                results = Dataset.list(params)
+            }
+            return results
 		}
 		
 		// use criteria in order to compare nested values
