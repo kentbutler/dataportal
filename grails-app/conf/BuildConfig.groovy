@@ -44,15 +44,19 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
 		compile "org.grails.plugins:mongodb:1.3.0"
-		
+        
         runtime 'mysql:mysql-connector-java:5.1.25'
+        runtime 'com.github.groovy-wslite:groovy-wslite:0.8.0'
     }
 
     plugins {
+        compile ":wslite:0.7.2.0"
+        
         runtime ":hibernate:$grailsVersion"
         runtime ":jquery:1.8.3"
         runtime ":resources:1.2"
-
+        runtime ":cors:1.1.0"
+        
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0"
         //runtime ":cached-resources:1.0"

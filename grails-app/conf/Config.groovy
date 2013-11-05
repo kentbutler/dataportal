@@ -92,17 +92,20 @@ log4j = {
         console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
     }
 
-    warn  'org.codehaus.groovy.grails.web.servlet',        // controllers
+    debug  'org.codehaus.groovy.grails.web.servlet',        // controllers
            'org.codehaus.groovy.grails.web.pages',          // GSP
            'org.codehaus.groovy.grails.web.sitemesh',       // layouts
            'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
-           'org.codehaus.groovy.grails.web.mapping',        // URL mapping
-           'org.codehaus.groovy.grails.commons',            // core / classloading
-           'org.codehaus.groovy.grails.plugins',            // plugins
-           'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
-           'org.springframework',
-           'org.hibernate',
-           'net.sf.ehcache.hibernate'
+           'org.codehaus.groovy.grails.web.mapping'         // URL mapping
+           
+   warn  'org.codehaus.groovy.grails',
+         'org.codehaus.groovy.grails.commons',            // core / classloading
+         'org.codehaus.groovy.grails.plugins',            // plugins
+         'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
+         'org.springframework',
+         'org.hibernate',
+         'net.sf.ehcache.hibernate'
+
 
     warn  'com.gargoylesoftware.htmlunit.WebClient', 'org.grails.plugins', additivity=true
 	trace 'grails.app', additivity=true
@@ -110,8 +113,10 @@ log4j = {
     warn 'grails.app.services.grails.buildtestdata','BuildTestDataGrailsPlugin','grials.buildtestdata',
         'org.codehaus.groovy','org.grails.plugin','grails.spring','net.sf.ehcache','grails.plugin','org.apache', additivity=true
 
+    trace 'wslite' 
+    
     root {
-        trace 'stdout', 'dataportal'
+        trace 'stdout', 'dataportal', 'wslite'
         additivity = true
     }
 }

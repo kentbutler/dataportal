@@ -7,12 +7,13 @@ class BootStrap {
     def init = { servletContext ->
         
         println "Current Environment: ${Environment.current.name}"
+        def dataport
         
         if (Environment.current.name != 'production') {
 			
             println "Loading test data..."
 			
-			def dataport = Dataport.findByContextName('ufomini')
+			dataport = Dataport.findByContextName('ufomini')
 			if (!dataport) {
 				new Dataport(contextName:'ufomini',
 					endpoint:'file:///opt/projects/dataportal/data/ufomini.json',
@@ -48,6 +49,24 @@ class BootStrap {
             
         }
         
+        dataport = Dataport.findByContextName('CCDBRestService')
+        if (!dataport) {
+            new Dataport(contextName:'CCDBRestService',
+                endpoint:'http://10.1.5.14:8080/CCDBService-1.0-SNAPSHOT/CCDBRestService',
+                type: 'json',
+                description:'JIATFS HTTP data service',
+                mapId: '',
+                mapName: '',
+                mapDescr: '',
+                mapLocation: '',
+                mapCreateDate: '',
+                mapEventDate: '',
+                mapCreateDateFormat: '',
+                mapEventDateFormat: ''
+            ).save(flush:true)
+        }
+            
+            
         if (Environment.current.name != 'production') {
             
             // DROP MONGO DB

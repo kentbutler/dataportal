@@ -38,4 +38,5 @@ org.grails.ide.eclipse.core.source.attachment-grails-spring-2.2.3.jar=/opt/proje
 org.grails.ide.eclipse.core.source.attachment-grails-test-2.2.3.jar=/opt/projects/local/grails-2.2.3/src/grails-test-2.2.3-sources.jar
 org.grails.ide.eclipse.core.source.attachment-grails-web-2.2.3.jar=/opt/projects/local/grails-2.2.3/src/grails-web-2.2.3-sources.jar
 org.grails.ide.eclipse.core.source.attachment-plugin-classes=/grails-json-rest-api/src/groovy
+org.grails.ide.eclipse.core.source.attachment-tomcat-embed-core-7.0.39.jar=/opt/projects/local/grails-src-2.2.3/grails-core/grails-web/src/main/groovy/org/codehaus/groovy/grails/web/sitemesh
 org.grails.ide.eclipse.core.use.default.install=true

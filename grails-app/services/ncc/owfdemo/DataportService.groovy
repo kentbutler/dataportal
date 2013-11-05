@@ -3,6 +3,7 @@ package ncc.owfdemo
 import ncc.owfdemo.data.JsonDataLoader
 import ncc.owfdemo.data.LocalFileLoader
 import ncc.owfdemo.data.RandomGenerator
+import wslite.http.HTTPMethod
 
 class DataportService {
 
@@ -104,10 +105,15 @@ class DataportService {
      * @param params
      * @return
      */
-    def retrieveItems (Dataport dataport, def params) {
+    def retrieveItems (Dataport dataport, def params, def request) throws Exception {
         if (!dataport || !dataport.contextName) {
             throw new IllegalArgumentException("Unsupported: search on undefined Dataport")
         }
+        
+        if (!dataport.isLocalDatasource()) {
+            return remoteRetrieve (dataport, params, request)
+        }
+        
         log.debug "================== searching warehouse [${dataport.contextName}] ========================"
         // Now Apply search parameters, dynamically create method string based on input params
         //   First we need to remove some common params
@@ -176,6 +182,105 @@ class DataportService {
 		}
 		 
         return results
+    }
+    
+    
+    def remoteRetrieve(Dataport dataport, def params, def request) throws Exception {
+        log.debug "Remotely accessing Dataport:: ${dataport}"
+        
+        def searchParams = RequestUtils.extractSearchValues(params)
+        log.debug "Searching with params: $searchParams"
+        def output
+        
+        // Issue request vs. remote source
+        /*
+        withRest(url: dataport.endpoint) { 
+            //TODO One day make this dynamic
+            def response
+            log.debug "Request method:: ${request.method}"
+            if (request.method == 'GET') {
+                response = delegate.get(path: '', query: searchParams)
+            }
+            else if (request.method == 'POST') {
+                delegate.httpClient.sslTrustAllCerts = true
+                
+                response = delegate.post() {
+                    charset "UTF-8"
+                    searchParams
+                }
+            }
+            else if (request.method == 'PUT') {
+                response = delegate.put(path: '', query: searchParams)
+            }
+
+            log.debug response.json
+            if (response?.json) {
+                output = response.json
+            }
+        }
+        */
+        def rsp
+        
+        withRest(url: dataport.endpoint) {
+            log.debug "Request method:: ${request.method}"
+            log.debug "Endpoint: ${dataport.endpoint}"
+            /*
+            if (request.method == 'GET') {
+                //delegate.httpClient.followRedirects = true
+                response = delegate.get(path: '', 
+                                        query: searchParams,
+                                        connectTimeout: 10000,
+                                        readTimeout: 30000,
+                                        followRedirects: true
+                                        )
+                
+                log.debug response.json
+                if (response?.json) {
+                    output = response.json
+                }
+            }
+            */
+            if (request.method == 'POST' || request.method == 'GET') {
+                
+                // Our little secret!  <wink/>
+                delegate.httpClient.sslTrustAllCerts = true
+                
+                def req = new wslite.http.HTTPRequest()
+                req.method = (request.method == 'POST' ? HTTPMethod.POST : HTTPMethod.GET)
+                req.sslTrustAllCerts  = true
+                
+                def finalUrl = dataport.endpoint + "?"
+                searchParams.each { k, v ->
+                    finalUrl += "$k=${java.net.URLEncoder.encode(v)}&"
+                }
+                req.url = new java.net.URL(finalUrl)
+                log.debug "${request.method}ing URL: $finalUrl"
+                
+                rsp = delegate.httpClient.execute(req) 
+                log.debug "Response type: ${rsp.class.name}"
+                log.debug "Response:: $rsp"
+                log.debug "Response content:: ${rsp.contentAsString}"
+                //output = rsp?.data && rsp?.data instanceof String ? new String(rsp.data) : rsp.data
+                return rsp
+            }
+            else if (request.method == 'PUT') {
+                
+                //  TODO - this branch replaced by previous?? 
+                
+                //response = delegate.put(path: '', query: searchParams)
+                rsp = delegate.put() {
+                    charset "UTF-8"
+                    (java.util.Map) searchParams
+                }
+                log.debug rsp.json
+                if (rsp?.json) {
+                    output = rsp.json
+                }
+                //!!RETURN HERE
+                return output
+            }
+
+        }
     }
     
     /**

@@ -17,6 +17,27 @@ class RandomGenerator {
 	
 	static final def MIN_PATTERN = ~/.*min([0-9]+).*/
 	static final def MAX_PATTERN = ~/.*max([0-9]+).*/
+    
+    static List CHARS = []
+    static {
+        // All caps
+        (65..90).each { i ->
+            CHARS << i
+        }
+        // All lowercase
+        (97..122).each { i ->
+            CHARS << i
+        }
+        // SPACE - this is a priority, add more chances to receive one
+        20.times {
+            CHARS << 32
+        }
+        // Symbol chars -- added separately in case future wants these
+        //    isolated from clean text output
+        (33..64).each { i ->
+            CHARS << i
+        }
+    }
   
 	long seed
 	Random rand
@@ -71,7 +92,7 @@ class RandomGenerator {
 		}
 	}
 	
-	// Base class for generators that have a Max length
+	// Base class for generators that have a Max length or size
 	class ConstrainedGenerator {
 		def min,max
 		def defaultMin
@@ -111,15 +132,12 @@ class RandomGenerator {
 		String getVal() {
 			def out = ""
 			def val
+            log.debug("Generating text for num ChARS: ${CHARS.size()}")
 			max.times {
-			   // Caps: 65-90
-			   val = getRandom().nextInt(26) + 65
-			   out += (char)val
+			   val = getRandom().nextInt(CHARS.size())
+			   out += (char)CHARS[val]
 			}
 			return out
-		 }
-		 def getGenerator() {
-			 return getRandom()
 		 }
 	}
 	class LongGenerator extends ConstrainedGenerator {
