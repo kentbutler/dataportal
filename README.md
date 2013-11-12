@@ -287,29 +287,55 @@ where:
 
 ------------------------------------------------------------------------------------------------
 
+## Building
 
-## For Developers
+### Requirements
 
+Requires:
+* Grails 2.2.3 - Ensure your `GRAILS_HOME` environment variable is set
+* Java6/7 - Ensure your `JAVA_HOME` environment variable is set
+  
 ### Get Latest
 
+`git pull https://github.com/kentbutler/dataportal`
+  
+or
+  
 `git pull git@gitolite:/dataportal`
 
-### Build 
+### Build for deployment
 
-        grails compile   
-   
-**or**   
+Open a command shell in the project directory. Execute:
 
-        grails war
+        grails war 
+  
+Find `.war` output app in `target/` directory.
 
+
+------------------------------------------------------------------------------------------------
+
+## Running
+
+### Requirements
+
+Running the app additionally requires: 
+  
+* Mongo database installed and running
+  
 ### Run locally 
 
+Open a command shell in the project directory. Execute:
+  
         grails -Dserver.port=8888 run-app --stacktrace
+  
+### Run from a server
+  
+Build the `war` file (see Building). Move `.war` file to a Java servlet container like Tomcat or Jetty.
 
 ### Verifying the install
 
 As a quick test of installation, run the following command after starting the server.  This should return a short list of results:
-
+  
         http://localhost:8888/dataportal/data/ufomini?locationLike=WA
    
 If this does not return any results then the app probably cannot connect to Mongo.  Check your server logs.
@@ -324,6 +350,10 @@ and verify results with
 
         http://localhost:8888/dataportal/data/test
 
+
+------------------------------------------------------------------------------------------------
+
+## Testing
 
 ### Run Functional Tests
 
