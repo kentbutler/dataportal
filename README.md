@@ -1,23 +1,23 @@
 # Dataportal
 
-__Synopsis:__  Dataportal is a Grails webapp which generically proxies either live or static datasets. It exposes your datasets via a URL endpoint and normalized JSON interface.
+## Overview
 
-For static datasets the advantage is obvious - Dataportal brings them to life in webspace.  
-
-For remote datasets, Dataportal offers a local proxy which will not be blocked by browser XSS security features. *[Remote proxy feature TBD]*
-
-## How it works
-
-Dataportal defines a [Dataport](#defs) as a source of data - it tells Dataportal and how to talk to the datasource   
-
-It maps typical fields such as `uuid, name, description, location, eventDate, createDate`   
-
-Local datasources are parsed and uploaded into a Mongo datastore to enable search functionality
-
-<a id="example"></a>**Example:**  
-   
-Pavel has a data file in JSON format located at
+Dataportal is a Grails webapp which generically proxies either live or static datasets. It exposes your datasets via a URL endpoint and normalized JSON interface.
   
+* static datasets - Dataportal loads JSON static files into MongoDB and makes them dynamically searchable.
+  
+* remote datasets - Dataportal offers a local proxy which will not be blocked by browser XSS security features. *[Field normalization TBD - currently it functions as a straight pass-through]*
+    
+------------------------------------------------------------------------------------------------
+  
+## <a id="example"></a>Examples
+
+
+
+### Make a static JSON File web-searchable
+     
+Pavel has a data file in JSON format located at
+    
           file:/opt/data/ufo.json
           
 He [creates a Dataport](#create) to represent it, including a map of the standard field names 
@@ -35,17 +35,17 @@ He [creates a Dataport](#create) to represent it, including a map of the standar
                         mapCreateDateFormat: 'YYYYMMdd',
                         mapEventDateFormat: 'YYYYMMdd'
                 ).save(flush:true)
-
+  
 Pavel queries the dataset via the `/data` endpoint
-  
+    
           http://localhost:8080/dataportal/data/ufo
-          
+            
 which returns every single record in JSON.
-
+ 
 He applies **search fields** from any of the standard fields
-  
+    
           http://localhost:8080/dataportal/data/ufo?location="Yuma, AZ"
-  
+   
 and even wildcarded
     
           http://localhost:8080/dataportal/data/ufo?locationLike="AZ"
@@ -53,12 +53,47 @@ and even wildcarded
 and even fields that are **not in the standard set**
     
           http://localhost:8080/dataportal/data/ufo?locationLike="AZ"&shape="saucer"
-
+  
 and he didn't have to write any code to get his data online!
+     
+     
+### Proxy a remote endpoint
+     
+Pavel found a data service located on the web rooted at
+    
+          http:/website.com/infodata
+  
+He needs to use some of its content on his UI, but because it is from a different domain he has a cross-domain issue using Ajax to retrieve it. Also it is straight HTTP and his site is secured by HTTPS which puts the browser into mixed HTTP/HTTPS mode. It would be easier to front this endpoint with a local HTTPS call.
+          
+He [creates a Dataport](#create) to represent it.  He doesn't care about the standard field names, he wants a straight pass-through:
+  
+            new Dataport(contextName:'infodata', 
+                        endpoint:'http:/website.com/infodata', 
+                        type: 'json', 
+                        description:'Information meta-data for buzzword scheme traversal'
+                ).save(flush:true)
    
+Now he can direct his Ajax calls to his local server
 
+        https:/localserver:8443/dataportal/data/infodata
+  
+and it will pass requests through and back - no Fuss no Muss.
+     
+     
+------------------------------------------------------------------------------------------------
+
+## How it works
+  
+Dataportal defines a [Dataport](#defs) as a source of data - it tells Dataportal how to talk to the datasource   
+  
+It maps typical fields such as `uuid, name, description, location, eventDate, createDate`   
+  
+Local datasources are parsed and uploaded into a Mongo datastore to enable search functionality
+
+------------------------------------------------------------------------------------------------
+  
 ## Definitions    
- 
+  
 ### General Definitions
 
 * **Dataportal** - this project, if anyone asks   
@@ -69,7 +104,8 @@ and he didn't have to write any code to get his data online!
 
 The following are known data formats and can be parsed by Dataportal.
 
-#### JSON
+#### JSON 
+  
 Dataports representing JSON datasets should have type
     type = 'json'
 
@@ -80,6 +116,7 @@ and be formatted as a flat list of JSON objects.  Example:
     {"f1":"v1", "f2":"v2"}
 
 #### CSV
+  
 TBD.
 
 ### <a id="defs"></a>Data Definition
@@ -191,7 +228,7 @@ There are several ways to define a Dataport:
 
 1. programmatically - create a definition in BootStrap.groovy. See the [example](#example) for a sample constructor
 
-2. generating the data - Dataportal can fabricate a dataset for you, and that will create a Dataport in the process - see this section for details
+2. generating the data - Dataportal can fabricate a dataset for you, and that will create a Dataport in the process - see [this section](#gen) for details
 
 3. (TBD) dynamically - load the admin interface
           http://localhost:8080/dataportal/admin/index.html
@@ -220,6 +257,8 @@ Get all record with location like %AZ% and shape like 'cigar'
 Search is case-insensitive.  'Like' searches should **not** include wildcard characters in field values.
 
 
+------------------------------------------------------------------------------------------------
+
 ## <a id="gen"></a>Generating Datasets
 
 A Dataport with fabricated records may be created by issuing a request to the `/gen` endpoint. 
@@ -244,6 +283,9 @@ where:
     - `RANDDATE` - random date file, formatted as is the default outputFormat
     - `minN` - apply this to ranged types TEXT,INT,FLOAT to specify min value   
     - `maxN` - apply this to ranged types TEXT,INT,FLOAT to specify max value
+
+
+------------------------------------------------------------------------------------------------
 
 
 ## For Developers
@@ -303,10 +345,13 @@ Now execute the tests:
 
         grails test-app -unit
 
+------------------------------------------------------------------------------------------------
+
 ## Todo
+
 On the wish list:   
 
-* admin interface
+* UI for creating dataports
+* generate data from a JSON file (describing the data layout)
 * support for CSV
-* support for remote data endpoints  (need good examples)
 

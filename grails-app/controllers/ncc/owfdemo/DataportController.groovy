@@ -145,6 +145,7 @@ class DataportController {
                 if (results.contentType?.contains("json") || results.contentType?.contains("text")) {
                     jsonOut = new String(results.data)
                     log.debug "JSON content to return:: $jsonOut"
+                    log.debug "JSON size:: ${jsonOut?.size()}"
                     
                     render (text: jsonOut, contentType: results.contentType, encoding: results.charset, status: results.statusCode)
                 }

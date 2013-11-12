@@ -194,12 +194,19 @@ class DataportService {
         
         // Issue request vs. remote source
         /*
+         *  Original simple verison, ok for HTTP
         withRest(url: dataport.endpoint) { 
-            //TODO One day make this dynamic
             def response
             log.debug "Request method:: ${request.method}"
             if (request.method == 'GET') {
                 response = delegate.get(path: '', query: searchParams)
+                
+                // Or fully spec'd out 
+                //response = delegate.get(path: '', 
+                //                        query: searchParams,
+                //                        connectTimeout: 10000,
+                //                        readTimeout: 30000,
+                //                        followRedirects: true)
             }
             else if (request.method == 'POST') {
                 delegate.httpClient.sslTrustAllCerts = true
@@ -219,21 +226,21 @@ class DataportService {
             }
         }
         */
-        def rsp
+        
+        def rsp  // Should be a wrapped HttpResponse
         
         withRest(url: dataport.endpoint) {
             log.debug "Request method:: ${request.method}"
             log.debug "Endpoint: ${dataport.endpoint}"
+            
+            // This is just a tool - just make HTTPS work
+            //   For full-time production use you will want to
+            //   remove this and install the root CA cert of the
+            //   remote server into the local JVM cacerts
+            delegate.httpClient.sslTrustAllCerts = true
+            
             /*
             if (request.method == 'GET') {
-                //delegate.httpClient.followRedirects = true
-                response = delegate.get(path: '', 
-                                        query: searchParams,
-                                        connectTimeout: 10000,
-                                        readTimeout: 30000,
-                                        followRedirects: true
-                                        )
-                
                 log.debug response.json
                 if (response?.json) {
                     output = response.json
@@ -242,12 +249,10 @@ class DataportService {
             */
             if (request.method == 'POST' || request.method == 'GET') {
                 
-                // Our little secret!  <wink/>
-                delegate.httpClient.sslTrustAllCerts = true
-                
+                // GET/POST will use the HttpClient directly
                 def req = new wslite.http.HTTPRequest()
                 req.method = (request.method == 'POST' ? HTTPMethod.POST : HTTPMethod.GET)
-                req.sslTrustAllCerts  = true
+                //req.sslTrustAllCerts  = true
                 
                 def finalUrl = dataport.endpoint + "?"
                 searchParams.each { k, v ->
@@ -257,30 +262,24 @@ class DataportService {
                 log.debug "${request.method}ing URL: $finalUrl"
                 
                 rsp = delegate.httpClient.execute(req) 
-                log.debug "Response type: ${rsp.class.name}"
-                log.debug "Response:: $rsp"
-                log.debug "Response content:: ${rsp.contentAsString}"
-                //output = rsp?.data && rsp?.data instanceof String ? new String(rsp.data) : rsp.data
-                return rsp
             }
             else if (request.method == 'PUT') {
-                
-                //  TODO - this branch replaced by previous?? 
-                
-                //response = delegate.put(path: '', query: searchParams)
+                // The following does basically this
+                //    response = delegate.put(path: '', query: searchParams)
                 rsp = delegate.put() {
                     charset "UTF-8"
                     (java.util.Map) searchParams
                 }
-                log.debug rsp.json
-                if (rsp?.json) {
-                    output = rsp.json
-                }
-                //!!RETURN HERE
-                return output
             }
-
+            else {
+                log.error "HTTP method ${request.method} not currently supported"
+            }
         }
+        
+        log.debug "Response type: ${rsp?.class?.name}"
+        log.debug "Response:: $rsp"
+        log.debug "Response content:: ${rsp?.contentAsString}"
+        return rsp
     }
     
     /**
